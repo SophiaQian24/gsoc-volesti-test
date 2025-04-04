@@ -52,7 +52,7 @@ Through debugging, I discovered that the exception is thrown by max_inscribed_el
 
 ## Debugging the Issue
 I carefully studied the code and, using debugging, found that the issue occurs in the following line:
-```python
+```cpp
 ATP_A.diagonal() += ones_m * reg;
 ```
 The original code uses an m-dimensional ones vector (ones_m) to add a regularization term to the diagonal of ATP_A. However, ATP_A is an 
@@ -65,11 +65,11 @@ The regularization operation needs to apply the regularization to each decision 
 
 I added:
 
-```python
+```cpp
 VT const bmAx0 = b - A * x0, ones_m = VT::Ones(m), ones_n = VT::Ones(n);
 ```
 and modified the original line to:
-```python
+```cpp
 ATP_A.diagonal() += ones_n * reg;
 ```
 
