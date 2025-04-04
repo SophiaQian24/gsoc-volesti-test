@@ -8,12 +8,7 @@ Develop an optimized Exact Hamiltonian Monte Carlo (HMC) sampler with a Gaussian
 
 ### Background
 
-- **Order Polytopes:**  
-  Defined as the set of vectors \(x \in \mathbb{R}^n\) satisfying:
-  - \(0 \le x_i \le 1\) for all \(i\)
-  - \(x_i \le x_j\) for all \((i,j)\) corresponding to the partial order relations  
-  Their volume is proportional to the number of linear extensions of the poset.
-
+![alt text](image-5.png)
 - **Challenge:**  
   Traditional methods (e.g., ARMC, HAR) may become inefficient or slow to mix in high-dimensional settings. Optimizing sampling in this structured space is essential.
 
@@ -35,32 +30,12 @@ Develop an optimized Exact Hamiltonian Monte Carlo (HMC) sampler with a Gaussian
 ### Proposed Optimization and Implementation Details
 
 #### 1. Use Analytic Trajectories
-- **Theory:**  
-  For a Gaussian target \(\pi(x) \propto \exp(-a \|x\|^2)\), the exact solution to Hamilton's equations is:
-  \[
-  x(t) = x_0 \cos(\omega t) + \frac{v_0}{\omega} \sin(\omega t), \quad \text{with } \omega = \sqrt{2a}.
-  \]
-- **Implementation:**  
-  - Precompute \(a\) (related to the target variance) from the chosen Gaussian.
-  - Use the analytic expressions for \(x(t)\) to update positions exactly during each HMC trajectory.
-  - This removes the need for a leapfrog integrator and avoids discretization errors.
+![alt text](image-1.png)
+![alt text](image-2.png)
 
 #### 2. Efficient Boundary Handling via Exact Collision Detection and Reflection
-- **Collision Time Computation:**  
-  - For each linear inequality constraint \(a_i^T x \le b_i\) defining the order polytope, solve the equation:
-    \[
-    a_i^T x(t) = b_i,
-    \]
-    where \(x(t)\) is given by the analytic trajectory.
-  - For linear constraints, this reduces to solving a trigonometric equation; the smallest positive solution \(t_c\) indicates the collision time.
-- **Reflection:**  
-  - At collision, compute the hyperplane's normal vector \(n\) (typically \(a_i\) itself).
-  - Reflect the momentum exactly:
-    \[
-    v_{\text{new}} = v - 2 \frac{v \cdot n}{\|n\|^2} n.
-    \]
-  - Restart the trajectory with the new momentum until the total travel time \(T\) is reached.
-
+![alt text](image-3.png)
+![alt text](image-4.png)
 #### 3. Uniform Distribution Approximation via Gaussian Smoothing
 - **Motivation:**  
   - The volume of the order polytope corresponds to the integral of the uniform distribution over \(P\).
@@ -79,7 +54,6 @@ Develop an optimized Exact Hamiltonian Monte Carlo (HMC) sampler with a Gaussian
   - Utilize multi-precision interval arithmetic (e.g., via iRRAM) to handle degenerate cases or near-boundary conditions.
   - Ensure that all geometric predicates (such as checking if a point lies inside \(P\)) are computed robustly to prevent numerical instability.
 - **Efficiency:**  
-  - Profile the code to identify bottlenecks.
   - Parallelize independent operations, such as computing collision times for multiple constraints.
 
 ---
@@ -88,7 +62,7 @@ Develop an optimized Exact Hamiltonian Monte Carlo (HMC) sampler with a Gaussian
 
 - **No Discretization Error:**  
   Exact integration of trajectories eliminates numerical integration error.
-- **100% Acceptance:**  
+- **High Acceptance:**  
   Energy conservation guarantees that proposals are always accepted.
 - **High-Dimensional Efficiency:**  
   Tailored boundary handling and exploitation of structure lead to faster mixing and lower runtime in high-dimensional order polytopes.
@@ -118,4 +92,3 @@ Develop an optimized Exact Hamiltonian Monte Carlo (HMC) sampler with a Gaussian
 
 resource: https://sbl.inria.fr/doc/Hamiltonian_Monte_Carlo-user-manual.html#sec-HMC-cpp-design-main-components
 
-![alt text](image.png) (latex for formula)
